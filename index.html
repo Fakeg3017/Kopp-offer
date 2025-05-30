@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrowEasy Invest</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Basic CSS for modals, cards, and tables */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      width: 300px;
+      text-align: center;
+    }
+    .modal-content input, .modal-content select, .modal-content textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+    .btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 5px;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      background: #f8f9fa;
+      margin: 0;
+    }
+    nav ul li {
+      margin: 0;
+    }
+    .nav-link {
+      display: block;
+      padding: 15px 20px;
+      text-decoration: none;
+      color: #333;
+      cursor: pointer;
+    }
+    .nav-link.active {
+      background: #007bff;
+      color: white;
+    }
+    .card {
+      display: none;
+      padding: 20px;
+      margin: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background: white;
+    }
+    .card.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    .status-verified {
+      color: green;
+    }
+    .status-unverified {
+      color: red;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      border-radius: 5px;
+    }
+    .product-card img {
+      max-width: 100%;
+      height: auto;
+    }
+    .balance-input {
+      width: 100px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h2>লগইন</h2>
+      <input type="email" id="loginEmail" placeholder="ইমেইল">
+      <input type="password" id="loginPassword" placeholder="পাসওয়ার্ড">
+      <p id="loginError" class="error"></p>
+      <button class="btn" onclick="login()">লগইন</button>
+      <p>অ্যাকাউন্ট নেই? <a href="#" onclick="showRegister()">রেজিস্টার করুন</a></p>
+      <p><a href="#" onclick="showAdminLogin()">অ্যাডমিন লগইন</a></p>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <h2>রেজিস্ট্রেশন</h2>
+      <input type="text" id="regUsername" placeholder="ইউজারনেম">
+      <input type="email" id="regEmail" placeholder="ইমেইল">
+      <input type="text" id="regPhone" placeholder="ফোন নম্বর">
+      <input type="password" id="regPassword" placeholder="পাসওয়ার্ড">
+      <input type="email" id="regReferrer" placeholder="রেফারার ইমেইল (ঐচ্ছিক)">
+      <p id="registerError" class="error"></p>
+      <button class="btn" onclick="register()">রেজিস্টার</button>
+      <p>ইতিমধ্যে অ্যাকাউন্ট আছে? <a href="#" onclick="showLogin()">লগইন করুন</a></p>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="modal">
+    <div class="modal-content">
+      <h2>অ্যাডমিন লগইন</h2>
+      <input type="text" id="adminUsername" placeholder="অ্যাডমিন ইউজারনেম">
+      <input type="password" id="adminPassword" placeholder="অ্যাডমিন পাসওয়ার্ড">
+      <p id="adminLoginError" class="error"></p>
+      <button class="btn" onclick="adminLogin()">লগইন</button>
+      <p><a href="#" onclick="showLogin()">ইউজার লগইন</a></p>
+    </div>
+  </div>
+
+  <!-- User Dashboard -->
+  <div id="dashboardContainer" style="display: none;">
+    <nav>
+      <ul>
+        <li><a href="#" class="nav-link active" data-section="dashboard">ড্যাশবোর্ড</a></li>
+        <li><a href="#" class="nav-link" data-section="task">টাস্ক</a></li>
+        <li><a href="#" class="nav-link" data-section="transfer">ট্রান্সফার</a></li>
+        <li><a href="#" class="nav-link" data-section="withdraw">উইথড্র</a></li>
+        <li><a href="#" class="nav-link" data-section="shop">শপ</a></li>
+        <li><a href="#" class="nav-link" data-section="team">টিম</a></li>
+        <li><a href="#" class="nav-link" data-section="agent">এজেন্ট</a></li>
+        <li><a href="#" class="nav-link" onclick="logout()">লগআউট</a></li>
+      </ul>
+    </nav>
+
+    <div id="dashboard" class="card active">
+      <h2>ড্যাশবোর্ড</h2>
+      <p>ইউজারনেম: <span id="username"></span></p>
+      <p>ইমেইল: <span id="email"></span></p>
+      <p>স্ট্যাটাস: <span id="status"></span></p>
+      <p>একটিভ: <span id="activeBalance"></span></p>
+      <p>IABB: <span id="iabbBalance"></span></p>
+      <p>টাস্ক ব্যালেন্স: <span id="taskBalance"></span></p>
+      <p>টিমে মোট মেমবার: <span id="teamCount">0</span></p>
+      <p>রেফার লিঙ্ক: <span id="referLink"></span></p>
+      <button class="btn" onclick="activateID()">আইডি একটিভ করুন</button>
+    </div>
+
+    <div id="task" class="card">
+      <h2>টাস্ক</h2>
+      <table id="tasksTable">
+        <tr>
+          <th>টাস্ক নম্বর</th>
+          <th>লিঙ্ক</th>
+          <th>স্ট্যাটাস</th>
+          <th>P</th>
+          <th>অ্যাকশন</th>
+        </tr>
+      </table>
+    </div>
+
+    <div id="transfer" class="card">
+      <h2>ট্রান্সফার ব্যালেন্স</h2>
+      <input type="email" id="transferEmail" placeholder="রিসিভারের ইমেইল">
+      <input type="number" id="transferAmount" placeholder="পরিমাণ">
+      <p id="transferError" class="error"></p>
+      <button class="btn" onclick="transfer()">ট্রান্সফার</button>
+    </div>
+
+    <div id="withdraw" class="card">
+      <h2>উইথড্র</h2>
+      <select id="withdrawBalanceType" onchange="updateWithdrawForm()">
+        <option value="">ব্যালেন্স টাইপ নির্বাচন করুন</option>
+        <option value="iabbBalance">IABB ব্যালেন্স</option>
+        <option value="taskBalance">টাস্ক ব্যালেন্স</option>
+      </select>
+      <select id="withdrawMethod" onchange="updateWithdrawForm()">
+        <option value="">পদ্ধতি নির্বাচন করুন</option>
+        <option value="bkash">বিকাশ</option>
+        <option value="nagad">নগদ</option>
+        <option value="usdt">USDT</option>
+        <option value="BTC">BTC</option>
+      </select>
+      <input type="text" id="withdrawAccount" placeholder="অ্যাকাউন্ট নম্বর/ওয়ালেট অ্যাড্রেস" style="display: none;">
+      <input type="number" id="withdrawAmount" placeholder="পরিমাণ (ন্যূনতম $300)">
+      <p id="withdrawError" class="error"></p>
+      <button class="btn" onclick="submitWithdrawal()">জমা দিন</button>
+    </div>
+
+    <div id="shop" class="card">
+      <h2>শপ</h2>
+      <div id="productGrid" class="product-grid"></div>
+    </div>
+
+    <div id="team" class="card">
+      <h2>টিম</h2>
+      <div id="teamStructure"></div>
+    </div>
+
+    <div id="agent" class="card">
+      <h2>এজেন্ট</h2>
+      <p>এজেন্ট ফিচার আসছে...</p>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboardContainer" style="display: none;">
+    <nav>
+      <ul>
+        <li><a href="#" class="nav-link active" data-section="adminUsers">ইউজার</a></li>
+        <li><a href="#" class="nav-link" data-section="adminTasks">টাস্ক</a></li>
+        <li><a href="#" class="nav-link" data-section="adminWithdraws">উইথড্র</a></li>
+        <li><a href="#" class="nav-link" data-section="adminProducts">প্রোডাক্ট</a></li>
+        <li><a href="#" class="nav-link" data-section="adminOrders">অর্ডার</a></li>
+        <li><a href="#" class="nav-link" onclick="logout()">লগআউট</a></li>
+      </ul>
+    </nav>
+
+    <div id="adminUsers" class="card active">
+      <h2>ইউজার ম্যানেজমেন্ট</h2>
+      <table id="usersTable">
+        <tr>
+          <th>ইউজারনেম</th>
+          <th>ইমেইল</th>
+          <th>স্ট্যাটাস</th>
+          <th>একটিভ ব্যালেন্স</th>
+          <th>অ্যাকশন</th>
+        </tr>
+      </table>
+    </div>
+
+    <div id="adminTasks" class="card">
+      <h2>টাস্ক ম্যানেজমেন্ট</h2>
+      <input type="text" id="taskNumber" placeholder="টাস্ক নম্বর (যেমন: Task 1)">
+      <input type="text" id="taskLink" placeholder="টাস্ক লিঙ্ক">
+      <input type="number" id="taskReward" placeholder="পুরস্কার ($)">
+      <p id="taskError" class="error"></p>
+      <button class="btn" onclick="addTask()">টাস্ক যোগ করুন</button>
+      <table id="adminTasksTable">
+        <tr>
+          <th>টাস্ক নম্বর</th>
+          <th>লিঙ্ক</th>
+          <th>পুরস্কার</th>
+          <th>স্ট্যাটাস</th>
+          <th>অ্যাকশন</th>
+        </tr>
+      </table>
+    </div>
+
+    <div id="adminWithdrawals" class="card">
+      <h2>উইথড্র রিকুয়েস্ট</h2>
+      <table id="withdrawalsTable">
+        <tr>
+          <th>ইউজার ইমেইল</th>
+          <th>ব্যালেন্স টাইপ</th>
+          <th>পদ্ধতি</th>
+          <th>অ্যাকাউন্ট</th>
+          <th>金</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </table>
+    </div>
+
+    <div id="adminProducts" class="card">
+      <h2>প্রোডাক্ট ম্যানেজমেন্ট</h2>
+      <input type="text" id="productName" placeholder="প্রোডাক্টের নাম">
+      <textarea id="productDescription" placeholder="প্রোডাক্টের বর্ণনা"></textarea>
+      <input type="number" id="productPrice" placeholder="মূল্য">
+      <input type="text" id="productImage" placeholder="ইমেজ URL">
+      <p id="productError" class="error"></p>
+      <button class="btn" onclick="addProduct()">প্রোডাক্ট যোগ করুন</button>
+      <table id="productsTable">
+        <tr>
+          <th>নাম</th>
+          <th>বর্ণনা</th>
+          <th>মূল্য</th>
+          <th>ইমেজ</th>
+          <th>অ্যাকশন</th>
+        </tr>
+      </table>
+    </div>
+
+    <div id="adminOrders" class="card">
+      <h2>অর্ডার ম্যানেজমেন্ট</h2>
+      <table id="ordersTable">
+        <tr>
+          <th>ইউজার ইমেইল</th>
+          <th>প্রোডাক্ট</th>
+          <th>ঠিকানা</th>
+          <th>জেলা</th>
+          <th>থানা</th>
+          <th>উপজেলা</th>
+          <th>গ্রাম</th>
+          <th>মোবাইল</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Order Modal -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <h2>অর্ডার ফর্ম</h2>
+      <p id="orderProductName"></p>
+      <input type="text" id="orderAddress" placeholder="ঠিকানা">
+      <input type="text" id="orderDistrict" placeholder="জেলা">
+      <input type="text" id="orderThana" placeholder="থানা">
+      <input type="text" id="orderUpazila" placeholder="উপজেলা">
+      <input type="text" id="orderVillage" placeholder="গ্রাম">
+      <input type="text" id="orderMobile" placeholder="মোবাইল নম্বর">
+      <p id="orderError" class="error"></p>
+      <button class="btn" onclick="submitOrder()">জমা দিন</button>
+      <button class="btn btn-cancel" onclick="closeOrderModal()">বাতিল</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // Firebase SDK Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, set, get, child, push, update, onValue, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDf5Wvw4onk1ORFf",
+      authDomain: "groweasyinvest.firebaseapp.com",
+      databaseURL: "https://groweasyinvest-default-rtdb.firebaseio.com",
+      projectId: "groweasyinvest",
+      storageBucket: "groweasyinvest.firebasestorage.app",
+      messagingSenderId: "1014210963677",
+      appId: "1:1014210963677:web:0484e13532ff8166b0d334",
+      measurementId: "G-T58JDXXE0G"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Initialize Default Tasks (Run Once if Tasks Node is Empty)
+    async function initializeDefaultTasks() {
+      const tasksRef = ref(database, 'tasks');
+      const snapshot = await get(tasksRef);
+      if (!snapshot.val()) {
+        const defaultTasks = [
+          { number: "1001", link: "https://example.com/task1", reward: 100, status: "active" },
+          { number: "1002", link: "https://example.com/task2", reward: 150, status: "active" }
+        ];
+        defaultTasks.forEach(task => {
+          const taskId = push(tasksRef).key;
+          set(ref(database, `tasks/${taskId}`), task);
+        });
+      }
+    }
+    initializeDefaultTasks();
+
+    // Navigation Setup
+    function setupNavigation(containerId) {
+      document.querySelectorAll(`#${containerId} .nav-link`).forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelectorAll(`#${containerId} .nav-link`).forEach(l => l.classList.remove('active'));
+          document.querySelectorAll(`#${containerId} .card`).forEach(c => c.classList.remove('active'));
+          this.classList.add('active');
+          const section = this.getAttribute('data-section');
+          document.getElementById(section).classList.add('active');
+          if (section === 'task') loadTasks();
+          else if (section === 'team') loadTeam();
+          else if (section === 'adminUsers') loadUsersTable();
+          else if (section === 'adminTasks') loadAdminTasksTable();
+          else if (section === 'adminWithdrawals') loadWithdrawalsTable();
+          else if (section === 'adminProducts') loadProductsTable();
+          else if (section === 'adminOrders') loadOrdersTable();
+        });
+      });
+    }
+
+    setupNavigation('dashboardContainer');
+    setupNavigation('adminDashboardContainer');
+
+    // Check Login Status
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (loggedInUser) {
+      if (loggedInUser.role === 'admin') showAdminDashboard();
+      else showDashboard(loggedInUser);
+    } else {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+
+    // Modal Functions
+    function showLogin() {
+      document.getElementById('loginModal').style.display = 'flex';
+      document.getElementById('registerModal').style.display = 'none';
+      document.getElementById('adminLoginModal').style.display = 'none';
+    }
+
+    function showRegister() {
+      document.getElementById('registerModal').style.display = 'flex';
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('adminLoginModal').style.display = 'none';
+    }
+
+    function showAdminLogin() {
+      document.getElementById('adminLoginModal').style.display = 'flex';
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('registerModal').style.display = 'none';
+    }
+
+    // Register Function
+    async function register() {
+      const username = document.getElementById('regUsername').value;
+      const email = document.getElementById('regEmail').value;
+      const phone = document.getElementById('regPhone').value;
+      const password = document.getElementById('regPassword').value;
+      const referrer = document.getElementById('regReferrer').value;
+      const error = document.getElementById('registerError');
+
+      if (!username || !email || !phone || !password) {
+        error.textContent = 'সব ফিল্ড পূরণ করুন';
+        return;
+      }
+
+      try {
+        const userRef = ref(database, 'users/' + email.replace('.', '_'));
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) {
+          error.textContent = 'ইমেইল ইতিমধ্যে নিবন্ধিত';
+          return;
+        }
+        if (referrer) {
+          const referrerRef = ref(database, 'users/' + referrer.replace('.', '_'));
+          const referrerSnapshot = await get(referrerRef);
+          if (!referrerSnapshot.exists()) {
+            error.textContent = 'রেফারার ইমেইল খুঁজে পাওয়া যায়নি';
+            return;
+          }
+        }
+        const user = {
+          username,
+          email,
+          phone,
+          password, // In production, hash the password
+          status: 'pending',
+          role: 'user',
+          activeBalance: 0,
+          iabbBalance: 0,
+          taskBalance: 0,
+          completedTasks: [],
+          referrer: referrer || null
+        };
+        await set(userRef, user);
+        localStorage.setItem('loggedInUser', JSON.stringify(user));
+        error.textContent = '';
+        showDashboard(user);
+      } catch (e) {
+        error.textContent = 'রেজিস্ট্রেশন ব্যর্থ: ' + e.message;
+      }
+    }
+
+    // Login Function
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const error = document.getElementById('loginError');
+
+      try {
+        const userRef = ref(database, 'users/' + email.replace('.', '_'));
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
+          error.textContent = 'ভুল ইমেল বা পাসওয়ার্ড';
+          return;
+        }
+        const user = snapshot.val();
+        if (user.password !== password) {
+          error.textContent = 'ভুল ইমেল বা পাসওয়ার্ড';
+          return;
+        }
+        localStorage.setItem('loggedInUser', JSON.stringify(user));
+        error.textContent = '';
+        showDashboard(user);
+      } catch (e) {
+        error.textContent = 'লগিন ব্যর্থ: ' + e.message;
+      }
+    }
+
+    // Admin Login (Hardcoded for simplicity)
+    function adminLogin() {
+      const username = document.getElementById('adminUsername').value;
+      const password = document.getElementById('adminPassword').value;
+      const error = document.getElementById('adminLoginError');
+
+      const adminCredentials = { username: 'admin', password: 'admin123', role: 'admin', email: 'admin@example.com' };
+      if (username !== adminCredentials.username || password !== adminCredentials.password) {
+        error.textContent = 'ভুল অ্যাডমিন ইউজারনেম বা পাসওয়ার্ড';
+        return;
+      }
+      localStorage.setItem('loggedInUser', JSON.stringify(adminCredentials));
+      error.textContent = '';
+      showAdminDashboard();
+    }
+
+    // Show User Dashboard
+    async function showDashboard(user) {
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('registerModal').style.display = 'none';
+      document.getElementById('adminLoginModal').style.display = 'none';
+      document.getElementById('dashboardContainer').style.display = 'block';
+      document.getElementById('adminDashboardContainer').style.display = 'none';
+
+      document.getElementById('username').textContent = user.username;
+      document.getElementById('email').textContent = user.email;
+      document.getElementById('status').textContent = user.status;
+      document.getElementById('status').className = user.status === 'Verified' ? 'status-verified' : 'status-unverified';
+      document.getElementById('activeBalance').textContent = `$${user.activeBalance || 0}`;
+      document.getElementById('iabbBalance').textContent = `$${user.iabbBalance || 0}`;
+      document.getElementById('taskBalance').textContent = `$${user.taskBalance || 0}`;
+      document.getElementById('referLink').textContent = `https://yourdomain.com/ref?user=${user.email}`;
+      
+      const teamCount = await getTeamCount(user.email);
+      document.getElementById('teamCount').textContent = teamCount;
+    }
+
+    // Show Admin Dashboard
+    function showAdminDashboard() {
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('registerModal').style.display = 'none';
+      document.getElementById('adminLoginModal').style.display = 'none';
+      document.getElementById('dashboardContainer').style.display = 'none';
+      document.getElementById('adminDashboardContainer').style.display = 'block';
+      loadUsersTable();
+      loadAdminTasksTable();
+      loadWithdrawalsTable();
+      loadProductsTable();
+      loadOrdersTable();
+    }
+
+    // Load User Tasks
+    async function loadTasks() {
+      const table = document.getElementById('tasksTable');
+      while (table.rows.length > 1) table.deleteRow(1);
+      
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+      const tasksRef = ref(database, 'tasks');
+      const userRef = ref(database, 'users/' + user.email.replace('.', '_'));
+      const userSnapshot = await get(userRef);
+      const completedTasks = userSnapshot.val()?.completedTasks || [];
+
+      onValue(tasksRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const task = childSnapshot.val();
+          const taskId = childSnapshot.key;
+          const row = table.insertRow();
+          row.insertCell(0).textContent = task.number;
+          row.insertCell(1).innerHTML = `<a href="${task.link}" target="_blank">${task.link}</a>`;
+          const status = completedTasks.includes(taskId) ? 'Completed' : 'Pending';
+          row.insertCell(2).textContent = status;
+          row.insertCell(3).textContent = `$${task.reward}`;
+          const actionCell = row.insertCell(4);
+          if (status === 'Pending' && task.status === 'active') {
+            const completeButton = document.createElement('button');
+            completeButton.className = 'btn';
+            completeButton.textContent = 'Complete';
+            completeButton.onclick = () => completeTask(taskId, task.reward);
+            actionCell.appendChild(completeButton);
+          }
+        });
+      });
+    }
+
+    // Complete Task
+    async function completeTask(taskId, reward) {
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+      const userRef = ref(database, 'users/' + user.email.replace('.', '_'));
+      const userSnapshot = await get(userRef);
+      const userData = userSnapshot.val();
+      const completedTasks = userData.completedTasks || [];
+      
+      if (!completedTasks.includes(taskId)) {
+        completedTasks.push(taskId);
+        const newTaskBalance = (userData.taskBalance || 0) + reward;
+        await update(userRef, { completedTasks, taskBalance: newTaskBalance });
+        localStorage.setItem('loggedInUser', JSON.stringify({ ...userData, completedTasks, taskBalance: newTaskBalance }));
+        showDashboard({ ...userData, completedTasks, taskBalance: newTaskBalance });
+        loadTasks();
+      }
+    }
+
+    // Load Admin Tasks
+    async function loadAdminTasksTable() {
+      const table = document.getElementById('adminTasksTable');
+      while (table.rows.length > 1) table.deleteRow(1);
+      
+      const tasksRef = ref(database, 'tasks');
+      onValue(tasksRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const task = childSnapshot.val();
+          const taskId = childSnapshot.key;
+          const row = table.insertRow();
+          row.insertCell(0).textContent = task.number;
+          row.insertCell(1).innerHTML = `<a href="${task.link}" target="_blank">${task.link}</a>`;
+          row.insertCell(2).textContent = `$${task.reward}`;
+          row.insertCell(3).textContent = task.status;
+          const actionCell = row.insertCell(4);
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'btn';
+          deleteButton.textContent = 'Delete';
+          deleteButton.onclick = () => deleteTask(taskId);
+          actionCell.appendChild(deleteButton);
+        });
+      });
+    }
+
+    // Add Task
+    async function addTask() {
+      const number = document.getElementById('taskNumber').value;
+      const link = document.getElementById('taskLink').value;
+      const reward = parseFloat(document.getElementById('taskReward').value);
+      const error = document.getElementById('taskError');
+
+      if (!number || !link || isNaN(reward) || reward <= 0) {
+        error.textContent = 'সব ফিল্ড পূরণ করুন এবং বৈধ পুরস্কার দিন';
+        return;
+      }
+
+      const tasksRef = ref(database, 'tasks');
+      const newTaskRef = push(tasksRef);
+      await set(newTaskRef, {
+        number,
+        link,
+        reward,
+        status: 'active'
+      });
+      error.textContent = '';
+      document.getElementById('taskNumber').value = '';
+      document.getElementById('taskLink').value = '';
+      document.getElementById('taskReward').value = '';
+      loadAdminTasksTable();
+    }
+
+    // Delete Task
+    async function deleteTask(taskId) {
+      await remove(ref(database, `tasks/${taskId}`));
+      loadAdminTasksTable();
+    }
+
+    // Load Users Table
+    async function loadUsersTable() {
+      const table = document.getElementById('usersTable');
+      while (table.rows.length > 1) table.deleteRow(1);
+      
+      const usersRef = ref(database, 'users');
+      onValue(usersRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const user = childSnapshot.val();
+          const row = table.insertRow();
+          row.insertCell(0).textContent = user.username;
+          row.insertCell(1).textContent = user.email;
+          row.insertCell(2).textContent = user.status;
+          row.insertCell(3).textContent = `$${user.activeBalance || 0}`;
+          const actionCell = row.insertCell(4);
+          const toggleButton = document.createElement('button');
+          toggleButton.className = 'btn';
+          toggleButton.textContent = user.status === 'pending' ? 'Verify' : 'Unverify';
+          toggleButton.onclick = () => toggleUserStatus(user.email);
+          actionCell.appendChild(toggleButton);
+        });
+      });
+    }
+
+    // Toggle User Status
+    async function toggleUserStatus(email) {
+      const userRef = ref(database, 'users/' + email.replace('.', '_'));
+      const snapshot = await get(userRef);
+      const user = snapshot.val();
+      await update(userRef, { status: user.status === 'pending' ? 'Verified' : 'pending' });
+      loadUsersTable();
+    }
+
+    // Transfer Balance
+    async function transfer() {
+      const email = document.getElementById('transferEmail').value;
+      const amount = parseFloat(document.getElementById('transferAmount').value);
+      const error = document.getElementById('transferError');
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+
+      if (!email || isNaN(amount) || amount <= 0) {
+        error.textContent = 'বৈধ ইমেইল এবং পরিমাণ দিন';
+        return;
+      }
+
+      const receiverRef = ref(database, 'users/' + email.replace('.', '_'));
+      const senderRef = ref(database, 'users/' + user.email.replace('.', '_'));
+      const receiverSnapshot = await get(receiverRef);
+      const senderSnapshot = await get(senderRef);
+
+      if (!receiverSnapshot.exists()) {
+        error.textContent = 'রিসিভার ইমেইল খুঁজে পাওয়া যায়নি';
+        return;
+      }
+      if ((senderSnapshot.val().activeBalance || 0) < amount) {
+        error.textContent = 'পর্যাপ্ত ব্যালেন্স নেই';
+        return;
+      }
+
+      await update(senderRef, { activeBalance: (senderSnapshot.val().activeBalance || 0) - amount });
+      await update(receiverRef, { activeBalance: (receiverSnapshot.val().activeBalance || 0) + amount });
+      localStorage.setItem('loggedInUser', JSON.stringify({ ...senderSnapshot.val(), activeBalance: (senderSnapshot.val().activeBalance || 0) - amount }));
+      error.textContent = 'ট্রান্সফার সফল';
+      showDashboard(JSON.parse(localStorage.getItem('loggedInUser')));
+    }
+
+    // Update Withdraw Form
+    function updateWithdrawForm() {
+      const balanceType = document.getElementById('withdrawBalanceType').value;
+      const method = document.getElementById('withdrawMethod').value;
+      const accountInput = document.getElementById('withdrawAccount');
+      if (balanceType && method) {
+        accountInput.style.display = 'block';
+        accountInput.placeholder = method === 'bkash' || method === 'nagad' ? 'মোবাইল নম্বর' : 'ওয়ালেট অ্যাড্রেস';
+      } else {
+        accountInput.style.display = 'none';
+      }
+    }
+
+    // Submit Withdrawal
+    async function submitWithdrawal() {
+      const balanceType = document.getElementById('withdrawBalanceType').value;
+      const method = document.getElementById('withdrawMethod').value;
+      const account = document.getElementById('withdrawAccount').value;
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      const error = document.getElementById('withdrawError');
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+
+      if (!balanceType || !method || !account || isNaN(amount) || amount < 300) {
+        error.textContent = 'সব ফিল্ড পূরণ করুন এবং ন্যূনতম $300 উইথড্র করুন';
+        return;
+      }
+
+      const userRef = ref(database, 'users/' + user.email.replace('.', '_'));
+      const userSnapshot = await get(userRef);
+      const userData = userSnapshot.val();
+      if ((userData[balanceType] || 0) < amount) {
+        error.textContent = 'পর্যাপ্ত ব্যালেন্স নেই';
+        return;
+      }
+
+      const withdrawalsRef = ref(database, 'withdrawals');
+      const newWithdrawalRef = push(withdrawalsRef);
+      await set(newWithdrawalRef, {
+        userEmail: user.email,
+        balanceType,
+        method,
+        account,
+        amount,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+      });
+
+      await update(userRef, { [balanceType]: userData[balanceType] - amount });
+      localStorage.setItem('loggedInUser', JSON.stringify({ ...userData, [balanceType]: userData[balanceType] - amount }));
+      error.textContent = 'উইথড্র রিকুয়েস্ট জমা দেওয়া হয়েছে';
+      showDashboard(JSON.parse(localStorage.getItem('loggedInUser')));
+    }
+
+    // Load Withdrawals Table
+    async function loadWithdrawalsTable() {
+      const table = document.getElementById('withdrawalsTable');
+      while (table.rows.length > 1) table.deleteRow(1);
+      
+      const withdrawalsRef = ref(database, 'withdrawals');
+      onValue(withdrawalsRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const withdrawal = childSnapshot.val();
+          const withdrawalId = childSnapshot.key;
+          const row = table.insertRow();
+          row.insertCell(0).textContent = withdrawal.userEmail;
+          row.insertCell(1).textContent = withdrawal.balanceType;
+          row.insertCell(2).textContent = withdrawal.method;
+          row.insertCell(3).textContent = withdrawal.account;
+          row.insertCell(4).textContent = `$${withdrawal.amount}`;
+          row.insertCell(5).textContent = withdrawal.status;
+          const actionCell = row.insertCell(6);
+          if (withdrawal.status === 'pending') {
+            const approveButton = document.createElement('button');
+            approveButton.className = 'btn';
+            approveButton.textContent = 'Approve';
+            approveButton.onclick = () => approveWithdrawal(withdrawalId);
+            actionCell.appendChild(approveButton);
+          }
+        });
+      });
+    }
+
+    // Approve Withdrawal
+    async function approveWithdrawal(withdrawalId) {
+      await update(ref(database, `withdrawals/${withdrawalId}`), { status: 'approved' });
+      loadWithdrawalsTable();
+    }
+
+    // Add Product
+    async function addProduct() {
+      const name = document.getElementById('productName').value;
+      const description = document.getElementById('productDescription').value;
+      const price = parseFloat(document.getElementById('productPrice').value);
+      const image = document.getElementById('productImage').value;
+      const error = document.getElementById('productError');
+
+      if (!name || !description || isNaN(price) || price <= 0 || !image) {
+        error.textContent = 'সব ফিল্ড পূরণ করুন';
+        return;
+      }
+
+      const productsRef = ref(database, 'products');
+      const newProductRef = push(productsRef);
+      await set(newProductRef, { name, description, price, image });
+      error.textContent = '';
+      document.getElementById('productName').value = '';
+      document.getElementById('productDescription').value = '';
+      document.getElementById('productPrice').value = '';
+      document.getElementById('productImage').value = '';
+      loadProductsTable();
+    }
+
+    // Load Products Table
+    async function loadProductsTable() {
+      const table = document.getElementById('productsTable');
+      while (table.rows.length > 1) table.deleteRow(1);
+      
+      const productsRef = ref(database, 'products');
+      onValue(productsRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const product = childSnapshot.val();
+          const productId = childSnapshot.key;
+          const row = table.insertRow();
+          row.insertCell(0).textContent = product.name;
+          row.insertCell(1).textContent = product.description;
+          row.insertCell(2).textContent = `$${product.price}`;
+          row.insertCell(3).innerHTML = `<img src="${product.image}" width="50">`;
+          const actionCell = row.insertCell(4);
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'btn';
+          deleteButton.textContent = 'Delete';
+          deleteButton.onclick = () => deleteProduct(productId);
+          actionCell.appendChild(deleteButton);
+        });
+      });
+    }
+
+    // Delete Product
+    async function deleteProduct(productId) {
+      await remove(ref(database, `products/${productId}`));
+      loadProductsTable();
+    }
+
+    // Load Shop Products
+    async function loadShopProducts() {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+      
+      const productsRef = ref(database, 'products');
+      onValue(productsRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const product = childSnapshot.val();
+          const productId = childSnapshot.key;
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          card.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <p>$${product.price}</p>
+            <button class="btn" onclick="openOrderModal('${productId}', '${product.name}')">Order Now</button>
+          `;
+          grid.appendChild(card);
+        });
+      });
+    }
+
+    // Open Order Modal
+    function openOrderModal(productId, productName) {
+      document.getElementById('orderProductName').textContent = `Product: ${productName}`;
+      document.getElementById('orderModal').style.display = 'flex';
+      document.getElementById('orderModal').dataset.productId = productId;
+    }
+
+    // Close Order Modal
+    function closeOrderModal() {
+      document.getElementById('orderModal').style.display = 'none';
+    }
+
+    // Submit Order
+    async function submitOrder() {
+      const productId = document.getElementById('orderModal').dataset.productId;
+      const address = document.getElementById('orderAddress').value;
+      const district = document.getElementById('orderDistrict').value;
+      const thana = document.getElementById('orderThana').value;
+      const upazila = document.getElementById('orderUpazila').value;
+      const village = document.getElementById('orderVillage').value;
+      const mobile = document.getElementById('orderMobile').value;
+      const error = document.getElementById('orderError');
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+
+      if (!address || !district || !thana || !upazila || !village || !mobile) {
+        error.textContent = 'সব ফিল্ড পূরণ করুন';
+        return;
+      }
+
+      const ordersRef = ref(database, 'orders');
+      const newOrderRef = push(ordersRef);
+      await set(newOrderRef, {
+        userEmail: user.email,
+        productId,
+        address,
+        district,
+        thana,
+        upazila,
+        village,
+        mobile,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+      });
+      error.textContent = 'অর্ডার জমা দেওয়া হয়েছে';
+      closeOrderModal();
+      loadOrdersTable();
+    }
+
+    // Load Orders Table
+    async function loadOrdersTable() {
+      const table = document.getElementById('ordersTable');
+      while (table.rows.length > 1) table.deleteRow(1);
+      
+      const ordersRef = ref(database, 'orders');
+      const productsRef = ref(database, 'products');
+      const productsSnapshot = await get(productsRef);
+      const products = productsSnapshot.val() || {};
+      
+      onValue(ordersRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const order = childSnapshot.val();
+          const orderId = childSnapshot.key;
+          const row = table.insertRow();
+          row.insertCell(0).textContent = order.userEmail;
+          row.insertCell(1).textContent = products[order.productId]?.name || 'Unknown';
+          row.insertCell(2).textContent = order.address;
+          row.insertCell(3).textContent = order.district;
+          row.insertCell(4).textContent = order.thana;
+          row.insertCell(5).textContent = order.upazila;
+          row.insertCell(6).textContent = order.village;
+          row.insertCell(7).textContent = order.mobile;
+          row.insertCell(8).textContent = order.status;
+          const actionCell = row.insertCell(9);
+          if (order.status === 'pending') {
+            const approveButton = document.createElement('button');
+            approveButton.className = 'btn';
+            approveButton.textContent = 'Approve';
+            approveButton.onclick = () => approveOrder(orderId);
+            actionCell.appendChild(approveButton);
+          }
+        });
+      });
+    }
+
+    // Approve Order
+    async function approveOrder(orderId) {
+      await update(ref(database, `orders/${orderId}`), { status: 'approved' });
+      loadOrdersTable();
+    }
+
+    // Activate ID
+    async function activateID() {
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+      const userRef = ref(database, 'users/' + user.email.replace('.', '_'));
+      const snapshot = await get(userRef);
+      const userData = snapshot.val();
+      if (userData.status === 'pending') {
+        await update(userRef, { status: 'Verified' });
+        localStorage.setItem('loggedInUser', JSON.stringify({ ...userData, status: 'Verified' }));
+        showDashboard({ ...userData, status: 'Verified' });
+      }
+    }
+
+    // Get Team Count
+    async function getTeamCount(email) {
+      const usersRef = ref(database, 'users');
+      const snapshot = await get(usersRef);
+      const users = snapshot.val() || {};
+      let count = 0;
+      Object.values(users).forEach(user => {
+        if (user.referrer === email) count++;
+      });
+      return count;
+    }
+
+    // Load Team Structure
+    async function loadTeam() {
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+      const structure = document.getElementById('teamStructure');
+      structure.innerHTML = '';
+      const usersRef = ref(database, 'users');
+      const snapshot = await get(usersRef);
+      const users = snapshot.val() || {};
+      const team = Object.values(users).filter(u => u.referrer === user.email);
+      team.forEach(member => {
+        const div = document.createElement('div');
+        div.textContent = `${member.username} (${member.email})`;
+        structure.appendChild(div);
+      });
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      document.getElementById('dashboardContainer').style.display = 'none';
+      document.getElementById('adminDashboardContainer').style.display = 'none';
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
